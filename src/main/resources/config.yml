@@ -3,6 +3,9 @@ hosts:
   - 127.0.0.2
   - 127.0.0.3
 
+keyspace: test2
+query: select * from test
+
 reconnectionInterval: 1000
 socketReadTimeout: 500
 socketTimeout: 500

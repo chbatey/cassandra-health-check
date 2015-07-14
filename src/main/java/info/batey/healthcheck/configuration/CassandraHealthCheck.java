@@ -45,7 +45,7 @@ public class CassandraHealthCheck {
                 .withSocketOptions(socketOptions)
                 .withInitialListeners(Collections.singleton(new CassandraStateListener()));
 
-        this.allHosts = cluster.build().connect("test2");
+        this.allHosts = cluster.build().connect(configuration.getKeyspace());
 
         Map<String, Session> connections = new HashMap<>();
         for (String host : hosts) {
@@ -56,7 +56,7 @@ public class CassandraHealthCheck {
                                 new RoundRobinPolicy(), Collections.singletonList(new InetSocketAddress(host, 9042))))
                         .withReconnectionPolicy(new ConstantReconnectionPolicy(configuration.getReconnectionInterval()))
                         .withSocketOptions(socketOptions)
-                        .build().connect("test2"));
+                        .build().connect(configuration.getKeyspace()));
             } catch (Exception e) {
                 LOGGER.warn("Unable to add host" + host, e);
             }
@@ -67,7 +67,7 @@ public class CassandraHealthCheck {
                     Map<String, Status> status = new HashMap<>();
                     sessionMap.forEach((k, v) -> {
                         try {
-                            v.execute("Select * from test");
+                            v.execute(configuration.getQuery());
                             status.put(k, Status.UP);
                         } catch (Exception e) {
                             status.put(k, Status.DOWN);

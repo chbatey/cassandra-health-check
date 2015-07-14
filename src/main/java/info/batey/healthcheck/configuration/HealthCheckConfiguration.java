@@ -4,6 +4,7 @@ import io.dropwizard.Configuration;
 import org.hibernate.validator.constraints.*;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public class HealthCheckConfiguration extends Configuration {
@@ -21,6 +22,13 @@ public class HealthCheckConfiguration extends Configuration {
     private int socketReadTimeout;
 
     private boolean keepAlive;
+
+    @NotNull
+    private String keyspace;
+
+    @NotNull
+    private String query;
+
 
     public List<String> getHosts() {
         return hosts;
@@ -40,5 +48,13 @@ public class HealthCheckConfiguration extends Configuration {
 
     public boolean isKeepAlive() {
         return keepAlive;
+    }
+
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    public String getQuery() {
+        return query;
     }
 }
