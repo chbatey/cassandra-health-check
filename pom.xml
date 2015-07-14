@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>info.batey</groupId>
-    <artifactId>cassanra-health-check</artifactId>
+    <artifactId>cassandra-health-check</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <properties>
         <dropwizard.version>0.8.2</dropwizard.version>

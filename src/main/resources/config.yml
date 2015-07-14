@@ -6,3 +6,9 @@ hosts:
 reconnectionInterval: 1000
 socketReadTimeout: 500
 socketTimeout: 500
+
+# Logging settings.
+logging:
+  level: INFO
+  loggers:
+    "com.datastax.driver": OFF
