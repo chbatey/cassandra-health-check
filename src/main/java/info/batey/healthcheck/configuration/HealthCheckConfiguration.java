@@ -29,6 +29,8 @@ public class HealthCheckConfiguration extends Configuration {
     @NotNull
     private String query;
 
+    @NotNull
+    private List<String> schemaCommands;
 
     public List<String> getHosts() {
         return hosts;
@@ -56,5 +58,9 @@ public class HealthCheckConfiguration extends Configuration {
 
     public String getQuery() {
         return query;
+    }
+
+    public List<String> getSchemaCommands() {
+        return schemaCommands;
     }
 }

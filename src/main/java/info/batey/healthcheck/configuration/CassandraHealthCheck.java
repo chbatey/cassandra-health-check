@@ -45,7 +45,9 @@ public class CassandraHealthCheck {
                 .withSocketOptions(socketOptions)
                 .withInitialListeners(Collections.singleton(new CassandraStateListener()));
 
-        this.allHosts = cluster.build().connect(configuration.getKeyspace());
+        .allHosts = cluster.build().connect();
+
+        configuration.getSchemaCommands().forEach(this.allHosts::execute);
 
         Map<String, Session> connections = new HashMap<>();
         for (String host : hosts) {
@@ -61,9 +63,9 @@ public class CassandraHealthCheck {
                 LOGGER.warn("Unable to add host" + host, e);
             }
         }
-        this.sessionMap = connections;
+        sessionMap = connections;
 
-        this.executor.scheduleAtFixedRate(() -> {
+        executor.scheduleAtFixedRate(() -> {
                     Map<String, Status> status = new HashMap<>();
                     sessionMap.forEach((k, v) -> {
                         try {

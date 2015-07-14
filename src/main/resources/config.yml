@@ -5,6 +5,10 @@ hosts:
 
 keyspace: test2
 query: select * from test
+# Should be idempotent
+schemaCommands:
+  - "CREATE KEYSPACE IF NOT EXISTS test2 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3 }"
+  - "CREATE TABLE IF NOT EXISTS test2.test ( id int PRIMARY KEY , value text )"
 
 reconnectionInterval: 1000
 socketReadTimeout: 500
