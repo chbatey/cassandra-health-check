@@ -81,11 +81,19 @@ public class CassandraHealthCheck {
 
     }
 
-    private static class HealthStatus {
+    public HealthStatus status() {
+        return this.currentStatus;
+    }
+
+    public static class HealthStatus {
         private Map<String, Status> status;
 
         public HealthStatus(Map<String, Status> status) {
             this.status = status;
+        }
+
+        public Map<String, Status> getStatus() {
+            return status;
         }
 
         @Override
@@ -96,7 +104,7 @@ public class CassandraHealthCheck {
         }
     }
 
-    private enum Status {
+    public enum Status {
         UP, DOWN
     }
 

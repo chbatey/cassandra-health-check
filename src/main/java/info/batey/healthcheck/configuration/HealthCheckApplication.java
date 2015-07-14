@@ -6,9 +6,10 @@ import io.dropwizard.setup.Environment;
 public class HealthCheckApplication extends Application<HealthCheckConfiguration> {
     @Override
     public void run(HealthCheckConfiguration healthCheckConfiguration, Environment environment) throws Exception {
-        StatusEndpoint statusEndpoint = new StatusEndpoint();
+        CassandraHealthCheck cassandraHealthCheck = new CassandraHealthCheck(healthCheckConfiguration);
+        cassandraHealthCheck.initalise();
+        StatusEndpoint statusEndpoint = new StatusEndpoint(cassandraHealthCheck);
         environment.jersey().register(statusEndpoint);
-        new CassandraHealthCheck(healthCheckConfiguration).initalise();
     }
 
     public static void main(String[] args) throws Exception {
