@@ -1,0 +1,8 @@
+hosts:
+  - 127.0.0.1
+  - 127.0.0.2
+  - 127.0.0.3
+
+reconnectionInterval: 1000
+socketReadTimeout: 500
+socketTimeout: 500
