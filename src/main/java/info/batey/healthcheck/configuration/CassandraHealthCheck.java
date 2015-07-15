@@ -45,9 +45,9 @@ public class CassandraHealthCheck {
                 .withSocketOptions(socketOptions)
                 .withInitialListeners(Collections.singleton(new CassandraStateListener()));
 
-        .allHosts = cluster.build().connect();
+        allHosts = cluster.build().connect();
 
-        configuration.getSchemaCommands().forEach(this.allHosts::execute);
+        configuration.getSchemaCommands().forEach(allHosts::execute);
 
         Map<String, Session> connections = new HashMap<>();
         for (String host : hosts) {
