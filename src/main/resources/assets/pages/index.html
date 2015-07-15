@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" ng-app="statusApp">
+<head>
+    <meta charset="utf-8">
+    <title>Cassandra Status</title>
+    <link rel="stylesheet" href="css/app.css">
+
+    <link rel="stylesheet" href="webjars/angular-bootstrap/0.13.0/ui-bootstrap-csp.css">
+    <link rel="stylesheet" href="webjars/bootstrap/3.3.5/css/bootstrap.css">
+    <script src="webjars/angularjs/1.4.2/angular.js"></script>
+    <script src="webjars/angular-bootstrap/0.13.0/ui-bootstrap.js"></script>
+    <!--<script src="webjars/bootstrap/3.3.5/js/bootstrap.js"></script>-->
+
+    <script src="js/app.js"></script>
+    <script src="js/controllers.js"></script>
+</head>
+<body ng-controller="StatusCtrl">
+        <table class="table">
+            <tr>
+                <th>Node</th>
+                <th>Status</th>
+            </tr>
+            <tr ng-repeat="(node, s) in status">
+                <td> {{ node }} </td>
+                <td> <img ng-show="s=='UP'"  height=100 width=100 src="img/up.png"/>
+                <img ng-show="s=='DOWN'" height=100 width=100 src="img/down.png"/> </td></tr>
+            </tr>
+        </table>
+</body>
+</html>
