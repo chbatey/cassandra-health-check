@@ -56,7 +56,7 @@ public class CassandraHealthCheck {
         final Graphite graphite = new Graphite(new InetSocketAddress(configuration.getGraphiteHost(), 2003));
         Metrics metrics = cluster.getMetrics();
         final GraphiteReporter reporter = GraphiteReporter.forRegistry(metrics.getRegistry())
-                .prefixedWith("cassandra-connection")
+                .prefixedWith("cassandra-connection.all")
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .filter(MetricFilter.ALL)
@@ -104,13 +104,24 @@ public class CassandraHealthCheck {
         Map<String, Session> connections = new HashMap<>();
         for (String host : hosts) {
             try {
-                connections.put(host, Cluster.builder()
+                final Cluster connection = Cluster.builder()
                         .addContactPoints(InetAddress.getByName(host))
                         .withLoadBalancingPolicy(new WhiteListPolicy(
                                 new RoundRobinPolicy(), Collections.singletonList(new InetSocketAddress(host, 9042))))
                         .withReconnectionPolicy(new ConstantReconnectionPolicy(configuration.getReconnectionInterval()))
                         .withSocketOptions(socketOptions)
-                        .build().connect(configuration.getKeyspace()));
+                        .build();
+                connections.put(host, connection.connect(configuration.getKeyspace()));
+
+                final Graphite graphite = new Graphite(new InetSocketAddress(configuration.getGraphiteHost(), 2003));
+                Metrics metrics = connection.getMetrics();
+                final GraphiteReporter reporter = GraphiteReporter.forRegistry(metrics.getRegistry())
+                        .prefixedWith("cassandra-connection." + host.replaceAll("\\.", "-"))
+                        .convertRatesTo(TimeUnit.SECONDS)
+                        .convertDurationsTo(TimeUnit.MILLISECONDS)
+                        .filter(MetricFilter.ALL)
+                        .build(graphite);
+                reporter.start(1, TimeUnit.SECONDS);
             } catch (Exception e) {
                 LOGGER.warn("Unable to add host" + host, e);
             }
