@@ -8,7 +8,7 @@ statusApp.controller('StatusCtrl', function ($scope, $http, $interval) {
             $scope.status = data;
         });
         $http.get('metrics').success(function(data) {
-            $scope.requests = data.meters["cassandra-requests"];
+            $scope.requests = data.timers.cassandraRequests;
         });
     };
 

@@ -29,7 +29,7 @@
             <td><img ng-show="status.overall=='UP'" height=100 width=100 src="img/up.png"/><img
                     ng-show="status.overall=='DOWN'" height=100 width=100 src="img/down.png"/></td>
             <td> {{ status.query }}</td>
-            <td> {{ requests.mean_rate | number : 2}} req/s</td>
+            <td> {{ requests.m1_rate | number : 2}} req/s</td>
         </tr>
     </table>
 

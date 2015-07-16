@@ -33,7 +33,7 @@ public class CassandraHealthCheck {
 
     public CassandraHealthCheck(HealthCheckConfiguration configuration, MetricRegistry metrics) {
         this.configuration = configuration;
-        this.requests =  metrics.timer("cassandra-requests");
+        this.requests =  metrics.timer("cassandraRequests");
     }
 
     public void initalise() throws Exception {
