@@ -18,8 +18,8 @@ public class StatusEndpoint {
 
 
     @GET
-    public Map<String, CassandraHealthCheck.Status> check() {
-        return this.cassandraHealthCheck.status().getStatus();
+    public CassandraHealthCheck.HealthStatus check() {
+        return this.cassandraHealthCheck.status();
     }
 
 }

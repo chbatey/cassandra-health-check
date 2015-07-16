@@ -15,16 +15,38 @@
     <script src="js/controllers.js"></script>
 </head>
 <body ng-controller="StatusCtrl">
-        <table class="table">
-            <tr>
-                <th>Node</th>
-                <th>Status</th>
-            </tr>
-            <tr ng-repeat="(node, s) in status">
-                <td> {{ node }} </td>
-                <td> <img ng-show="s=='UP'"  height=100 width=100 src="img/up.png"/>
-                <img ng-show="s=='DOWN'" height=100 width=100 src="img/down.png"/> </td></tr>
-            </tr>
-        </table>
+<div class="container" role="main">
+    <h2> Cluster status </h2>
+    <table class="table">
+        <tr>
+            <th>Last executed</th>
+            <th>Status</th>
+            <th>Query</th>
+            <th>Current rate (ops/s)</th>
+        </tr>
+        <tr>
+            <td><b> {{ status.lastExecuted | date:'yyyy-MM-dd HH:mm:ss' }} </b></td>
+            <td><img ng-show="status.overall=='UP'" height=100 width=100 src="img/up.png"/><img
+                    ng-show="status.overall=='DOWN'" height=100 width=100 src="img/down.png"/></td>
+            <td> {{ status.query }}</td>
+            <td> {{ requests.mean_rate | number : 2}} req/s</td>
+        </tr>
+    </table>
+
+    <h2>Node status</h2>
+    <table class="table">
+        <tr>
+            <th>Status</th>
+            <th>Node</th>
+            <th>Last checked</th>
+        </tr>
+        <tr ng-repeat="(node, s) in status.nodes">
+            <td> {{ node }}</td>
+            <td><img ng-show="s=='UP'" height=100 width=100 src="img/up.png"/>
+                <img ng-show="s=='DOWN'" height=100 width=100 src="img/down.png"/></td>
+            <td> {{ status.lastExecuted | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+        </tr>
+    </table>
+</div>
 </body>
 </html>

@@ -1,5 +1,8 @@
 package info.batey.healthcheck.configuration;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Session;
@@ -12,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,18 +25,23 @@ public class CassandraHealthCheck {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(CassandraHealthCheck.class);
     private final HealthCheckConfiguration configuration;
+    private final MetricRegistry metrics;
+    private final Meter requests;
+
     private Map<String, Session> sessionMap;
     private Session allHosts;
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
-    private volatile HealthStatus currentStatus = new HealthStatus(Collections.emptyMap());
+    private volatile HealthStatus currentStatus = new HealthStatus("Not executed yet", Status.UP, Collections.emptyMap());
 
-
-    public CassandraHealthCheck(HealthCheckConfiguration configuration) {
+    public CassandraHealthCheck(HealthCheckConfiguration configuration, MetricRegistry metrics) {
         this.configuration = configuration;
+        this.metrics = metrics;
+        this.requests =  metrics.meter("cassandra-requests");
     }
 
     public void initalise() throws Exception {
+
         List<String> hosts = configuration.getHosts();
 
         SocketOptions socketOptions = new SocketOptions();
@@ -43,12 +52,46 @@ public class CassandraHealthCheck {
         Cluster.Builder cluster = Cluster.builder()
                 .addContactPoints(hosts.toArray(new String[hosts.size()]))
                 .withSocketOptions(socketOptions)
+                .withReconnectionPolicy(new ConstantReconnectionPolicy(configuration.getReconnectionInterval()))
                 .withInitialListeners(Collections.singleton(new CassandraStateListener()));
 
         allHosts = cluster.build().connect();
 
         configuration.getSchemaCommands().forEach(allHosts::execute);
+        allHosts.execute("USE " + configuration.getKeyspace());
 
+        initialiseSessions(hosts, socketOptions);
+
+        executor.scheduleAtFixedRate(() -> {
+                    Map<String, Status> status = new HashMap<>();
+                    sessionMap.forEach((k, v) -> status.put(k, checkStatus(v)));
+
+                    Status overall = checkStatus(allHosts);
+                    LOGGER.info("Over all status {}", overall);
+                    this.currentStatus = new HealthStatus(
+                            configuration.getQuery(),
+                            overall,
+                            status);
+                    LOGGER.info("{}", this.currentStatus);
+
+                },
+                0, 1, TimeUnit.SECONDS);
+
+
+        executor.submit(() -> {
+            while (true) {
+                try {
+                    allHosts.execute(configuration.getQuery());
+                    requests.mark();
+                    Thread.sleep(1);
+                } catch (Exception e) {
+                    LOGGER.debug("Failed to execute query", e);
+                }
+            }
+        });
+    }
+
+    private void initialiseSessions(List<String> hosts, SocketOptions socketOptions) {
         Map<String, Session> connections = new HashMap<>();
         for (String host : hosts) {
             try {
@@ -64,23 +107,16 @@ public class CassandraHealthCheck {
             }
         }
         sessionMap = connections;
+    }
 
-        executor.scheduleAtFixedRate(() -> {
-                    Map<String, Status> status = new HashMap<>();
-                    sessionMap.forEach((k, v) -> {
-                        try {
-                            v.execute(configuration.getQuery());
-                            status.put(k, Status.UP);
-                        } catch (Exception e) {
-                            status.put(k, Status.DOWN);
-                        }
-                        this.currentStatus = new HealthStatus(status);
-                    });
-                    LOGGER.info("{}", this.currentStatus);
-
-                },
-                0, 1, TimeUnit.SECONDS);
-
+    private Status checkStatus(Session session) {
+        try {
+            session.execute(configuration.getQuery());
+            return Status.UP;
+        } catch (Exception e) {
+            LOGGER.debug("Unable to execute query", e);
+            return Status.DOWN;
+        }
     }
 
     public HealthStatus status() {
@@ -88,20 +124,41 @@ public class CassandraHealthCheck {
     }
 
     public static class HealthStatus {
-        private Map<String, Status> status;
+        private final Instant lastExecuted;
+        private final String query;
+        private final Status overall;
+        private final Map<String, Status> nodes;
 
-        public HealthStatus(Map<String, Status> status) {
-            this.status = status;
+        public HealthStatus(String query, Status overall, Map<String, Status> nodes) {
+            this.lastExecuted = Instant.now();
+            this.query = query;
+            this.overall = overall;
+            this.nodes = nodes;
         }
 
-        public Map<String, Status> getStatus() {
-            return status;
+        public Map<String, Status> getNodes() {
+            return nodes;
+        }
+
+        public String getQuery() {
+            return query;
+        }
+
+        public Status getOverall() {
+            return overall;
+        }
+
+        public long getLastExecuted() {
+            return lastExecuted.toEpochMilli();
         }
 
         @Override
         public String toString() {
             return "HealthStatus{" +
-                    "status=" + status +
+                    "lastExecuted=" + lastExecuted +
+                    ", query='" + query + '\'' +
+                    ", overall=" + overall +
+                    ", nodes=" + nodes +
                     '}';
         }
     }

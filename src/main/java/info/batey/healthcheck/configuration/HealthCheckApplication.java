@@ -1,17 +1,25 @@
 package info.batey.healthcheck.configuration;
 
+import com.codahale.metrics.servlets.MetricsServlet;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 public class HealthCheckApplication extends Application<HealthCheckConfiguration> {
+
+
     @Override
     public void run(HealthCheckConfiguration healthCheckConfiguration, Environment environment) throws Exception {
-        CassandraHealthCheck cassandraHealthCheck = new CassandraHealthCheck(healthCheckConfiguration);
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+
+        environment.getApplicationContext().setAttribute(MetricsServlet.METRICS_REGISTRY, environment.metrics());
+        environment.servlets().addServlet("metrics", MetricsServlet.class).addMapping("/metrics");
+
+
+        CassandraHealthCheck cassandraHealthCheck = new CassandraHealthCheck(healthCheckConfiguration, environment.metrics());
         cassandraHealthCheck.initalise();
         StatusEndpoint statusEndpoint = new StatusEndpoint(cassandraHealthCheck);
-
         environment.jersey().register(statusEndpoint);
 
     }
