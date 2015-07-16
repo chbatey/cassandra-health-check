@@ -23,3 +23,15 @@ logging:
   level: INFO
   loggers:
     "com.datastax.driver": OFF
+
+metrics:
+  reporters:
+    - type: graphite
+      host: 192.168.10.120
+      port: 2003
+      prefix: cassandra-health
+      durationUnit: milliseconds
+      rateUnit: seconds
+      frequency: 1 second
+
+graphiteHost: 192.168.10.120

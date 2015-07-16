@@ -21,7 +21,6 @@ public class HealthCheckApplication extends Application<HealthCheckConfiguration
         cassandraHealthCheck.initalise();
         StatusEndpoint statusEndpoint = new StatusEndpoint(cassandraHealthCheck);
         environment.jersey().register(statusEndpoint);
-
     }
 
     @Override

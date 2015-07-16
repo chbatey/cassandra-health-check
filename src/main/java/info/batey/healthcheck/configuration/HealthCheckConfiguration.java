@@ -32,6 +32,9 @@ public class HealthCheckConfiguration extends Configuration {
     @NotNull
     private List<String> schemaCommands;
 
+    @NotNull
+    private String graphiteHost;
+
     public List<String> getHosts() {
         return hosts;
     }
@@ -62,5 +65,9 @@ public class HealthCheckConfiguration extends Configuration {
 
     public List<String> getSchemaCommands() {
         return schemaCommands;
+    }
+
+    public String getGraphiteHost() {
+        return graphiteHost;
     }
 }

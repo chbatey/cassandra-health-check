@@ -1,12 +1,10 @@
 package info.batey.healthcheck.configuration;
 
-import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SocketOptions;
+import com.codahale.metrics.*;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.graphite.GraphiteReporter;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.policies.ConstantReconnectionPolicy;
 import com.datastax.driver.core.policies.RoundRobinPolicy;
 import com.datastax.driver.core.policies.WhiteListPolicy;
@@ -25,8 +23,7 @@ public class CassandraHealthCheck {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(CassandraHealthCheck.class);
     private final HealthCheckConfiguration configuration;
-    private final MetricRegistry metrics;
-    private final Meter requests;
+    private final com.codahale.metrics.Timer requests;
 
     private Map<String, Session> sessionMap;
     private Session allHosts;
@@ -36,8 +33,7 @@ public class CassandraHealthCheck {
 
     public CassandraHealthCheck(HealthCheckConfiguration configuration, MetricRegistry metrics) {
         this.configuration = configuration;
-        this.metrics = metrics;
-        this.requests =  metrics.meter("cassandra-requests");
+        this.requests =  metrics.timer("cassandra-requests");
     }
 
     public void initalise() throws Exception {
@@ -49,13 +45,24 @@ public class CassandraHealthCheck {
         socketOptions.setReadTimeoutMillis(configuration.getSocketReadTimeout());
         socketOptions.setKeepAlive(configuration.isKeepAlive());
 
-        Cluster.Builder cluster = Cluster.builder()
+        Cluster cluster = Cluster.builder()
                 .addContactPoints(hosts.toArray(new String[hosts.size()]))
                 .withSocketOptions(socketOptions)
                 .withReconnectionPolicy(new ConstantReconnectionPolicy(configuration.getReconnectionInterval()))
-                .withInitialListeners(Collections.singleton(new CassandraStateListener()));
+                .withInitialListeners(Collections.singleton(new CassandraStateListener()))
+                .build();
+        allHosts = cluster.connect();
 
-        allHosts = cluster.build().connect();
+        final Graphite graphite = new Graphite(new InetSocketAddress(configuration.getGraphiteHost(), 2003));
+        Metrics metrics = cluster.getMetrics();
+        final GraphiteReporter reporter = GraphiteReporter.forRegistry(metrics.getRegistry())
+                .prefixedWith("cassandra-connection")
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .filter(MetricFilter.ALL)
+                .build(graphite);
+        reporter.start(1, TimeUnit.SECONDS);
+
 
         configuration.getSchemaCommands().forEach(allHosts::execute);
         allHosts.execute("USE " + configuration.getKeyspace());
@@ -80,12 +87,14 @@ public class CassandraHealthCheck {
 
         executor.submit(() -> {
             while (true) {
+                Timer.Context time = requests.time();
                 try {
                     allHosts.execute(configuration.getQuery());
-                    requests.mark();
                     Thread.sleep(1);
                 } catch (Exception e) {
                     LOGGER.debug("Failed to execute query", e);
+                } finally {
+                    time.stop();
                 }
             }
         });
