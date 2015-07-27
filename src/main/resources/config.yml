@@ -1,7 +1,7 @@
 hosts:
-  - 127.0.0.1
-  - 127.0.0.2
-  - 127.0.0.3
+  - 192.168.201.150
+  - 192.168.201.151
+  - 192.168.201.152
 
 keyspace: test2
 query: select * from test
@@ -14,15 +14,30 @@ reconnectionInterval: 1000
 socketReadTimeout: 500
 socketTimeout: 500
 
-server:
-  rootPath: /api/*
-
-
 # Logging settings.
 logging:
   level: INFO
   loggers:
     "com.datastax.driver": OFF
+
+server:
+  rootPath: /api/*
+  applicationConnectors:
+    - type: http
+      port: 9179
+      outputBufferSize: 32KiB
+      idleTimeout: 30 seconds
+      minBufferPoolSize: 64 bytes
+      bufferPoolIncrement: 1KiB
+      maxBufferPoolSize: 64KiB
+      acceptorThreads: 1
+      selectorThreads: 2
+      acceptQueueSize: 1024
+      reuseAddress: true
+      soLingerTime: 600s
+  adminConnectors:
+    - type: http
+      port: 9180
 
 metrics:
   reporters:
