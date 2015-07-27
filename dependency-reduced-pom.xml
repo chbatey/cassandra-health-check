@@ -62,6 +62,7 @@
     </plugins>
   </build>
   <properties>
+    <metrics.version>3.1.1</metrics.version>
     <dropwizard.version>0.8.2</dropwizard.version>
   </properties>
 </project>
