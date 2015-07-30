@@ -16,7 +16,7 @@
 </head>
 <body ng-controller="StatusCtrl">
 <div class="container" role="main">
-    <h2> Cluster status </h2>
+    <h2> Application Status </h2>
     <table class="table">
         <tr>
             <th>Last executed</th>
@@ -45,6 +45,11 @@
             <td><img ng-show="s=='UP'" height=100 width=100 src="img/up.png"/>
                 <img ng-show="s=='DOWN'" height=100 width=100 src="img/down.png"/></td>
             <td> {{ status.lastExecuted | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+        </tr>
+    </table>
+    <table width="100%">
+        <tr>
+            <td width="33%"><img align="center" height="200" width="200" src="img/AC_Node.png"></td><td width="33%"></td><td width="33%"><img align="center" height="200" width="200" src="img/AC_Node.png"></td>
         </tr>
     </table>
 </div>
