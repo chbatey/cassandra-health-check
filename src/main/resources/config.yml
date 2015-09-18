@@ -4,7 +4,8 @@ hosts:
   - 127.0.0.3
 
 keyspace: test2
-query: select * from test
+#query: select * from test
+query: select * from test where id = 1
 # Should be idempotent
 schemaCommands:
   - "CREATE KEYSPACE IF NOT EXISTS test2 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3 }"
@@ -18,7 +19,11 @@ socketTimeout: 500
 logging:
   level: INFO
   loggers:
-    "com.datastax.driver": OFF
+    "com.datastax.driver": INFO
+  appenders:
+    - type: console
+      logFormat: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
 
 server:
   rootPath: /api/*

@@ -1,57 +1,92 @@
 <!doctype html>
 <html lang="en" ng-app="statusApp">
+
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>Cassandra Status</title>
+
+    <link rel="stylesheet" href="webjars/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/app.css">
 
-    <link rel="stylesheet" href="webjars/angular-bootstrap/0.13.0/ui-bootstrap-csp.css">
-    <link rel="stylesheet" href="webjars/bootstrap/3.3.5/css/bootstrap.css">
     <script src="webjars/angularjs/1.4.2/angular.js"></script>
-    <script src="webjars/angular-bootstrap/0.13.0/ui-bootstrap.js"></script>
-    <!--<script src="webjars/bootstrap/3.3.5/js/bootstrap.js"></script>-->
-
     <script src="js/app.js"></script>
     <script src="js/controllers.js"></script>
 </head>
 <body ng-controller="StatusCtrl">
-<div class="container" role="main">
-    <h2> Application Status </h2>
-    <table class="table">
-        <tr>
-            <th>Last executed</th>
-            <th>Status</th>
-            <th>Query</th>
-            <th>Current rate (ops/s)</th>
-        </tr>
-        <tr>
-            <td><b> {{ status.lastExecuted | date:'yyyy-MM-dd HH:mm:ss' }} </b></td>
-            <td><img ng-show="status.overall=='UP'" height=100 width=100 src="img/up.png"/><img
-                    ng-show="status.overall=='DOWN'" height=100 width=100 src="img/down.png"/></td>
-            <td> {{ status.query }}</td>
-            <td> {{ requests.m1_rate | number : 2}} req/s</td>
-        </tr>
-    </table>
 
-    <h2>Node status</h2>
-    <table class="table">
-        <tr>
-            <th>Status</th>
-            <th>Node</th>
-            <th>Last checked</th>
-        </tr>
-        <tr ng-repeat="(node, s) in status.nodes">
-            <td> {{ node }}</td>
-            <td><img ng-show="s=='UP'" height=100 width=100 src="img/up.png"/>
-                <img ng-show="s=='DOWN'" height=100 width=100 src="img/down.png"/></td>
-            <td> {{ status.lastExecuted | date:'yyyy-MM-dd HH:mm:ss' }}</td>
-        </tr>
-    </table>
-    <table width="100%">
-        <tr>
-            <td width="33%"><img align="center" height="200" width="200" src="img/AC_Node.png"></td><td width="33%"></td><td width="33%"><img align="center" height="200" width="200" src="img/AC_Node.png"></td>
-        </tr>
-    </table>
+<nav class="navbar navbar-default navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+                <img alt="KillrVideo" src="img/killrvideo.svg"/>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-12">
+            <h2>Application Status</h2>
+            <table class="table table-striped table-bordered">
+                <tbody>
+                <tr>
+                    <th>Last executed</th>
+                    <th>Status</th>
+                    <th>Query</th>
+                    <th>Current rate (ops/s)</th>
+                </tr>
+                <tr ng-class="(status.overall=='UP') ? 'success' : 'danger'">
+                    <td><b> {{ status.lastExecuted | date:'yyyy-MM-dd HH:mm:ss' }} </b></td>
+                    <td>
+                        <i ng-show="status.overall=='UP'" class="glyphicon glyphicon-ok text-success"></i>
+                        <i ng-show="status.overall=='DOWN'" class="glyphicon glyphicon-warning-sign text-danger"></i>
+                    </td>
+                    <td> {{ status.query }}</td>
+                    <td> {{ requests.m1_rate | number : 2}} req/s</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <h2>Node status</h2>
+            <table class="table table-striped table-bordered">
+                <tbody>
+                <tr>
+                    <th>Status</th>
+                    <th>Node</th>
+                    <th>Last checked</th>
+                </tr>
+                <tr ng-repeat="(node, s) in status.nodes" ng-class="(s=='UP') ? 'success' : 'danger'">
+                    <td> {{ node }}</td>
+                    <td>
+                        <i ng-show="s=='UP'" class="glyphicon glyphicon-ok text-success"></i>
+                        <i ng-show="s=='DOWN'" class="glyphicon glyphicon-warning-sign text-danger"></i>
+                    </td>
+                    <td> {{ status.lastExecuted | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+<nav class="navbar navbar-default navbar-fixed-bottom">
+    <div class="container-fluid">
+        <h3>
+            Powered by: <img alt="KillrVideo" src="img/powered-by.svg"/>
+        </h3>
+
+    </div>
+</nav>
+<script src="webjars/jquery/1.11.1/jquery.min.js"></script>
+<script src="webjars/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
 </body>
 </html>

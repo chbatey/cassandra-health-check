@@ -1,0 +1,11 @@
+body {padding-top: 100px; padding-bottom: 100px;}
+.navbar-fixed-top {min-height: 80px;}
+.navbar-brand img, .navbar h3 img {height: 50px; }
+.table {
+    font-size: 1.2em;
+}
+.navbar-fixed-bottom {
+    text-align: center;
+}
+
+h2 {font-size: 4em; font-weight: 300;}

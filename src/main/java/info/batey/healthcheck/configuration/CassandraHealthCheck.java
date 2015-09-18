@@ -71,9 +71,9 @@ public class CassandraHealthCheck {
 
         executor.scheduleAtFixedRate(() -> {
                     Map<String, Status> status = new HashMap<>();
-                    sessionMap.forEach((k, v) -> status.put(k, checkStatus(v)));
+                    sessionMap.forEach((k, v) -> status.put(k, checkStatus(k, v)));
 
-                    Status overall = checkStatus(allHosts);
+                    Status overall = checkStatus("ALL", allHosts);
                     LOGGER.info("Over all status {}", overall);
                     this.currentStatus = new HealthStatus(
                             configuration.getQuery(),
@@ -92,7 +92,7 @@ public class CassandraHealthCheck {
                     allHosts.execute(configuration.getQuery());
                     Thread.sleep(1);
                 } catch (Exception e) {
-                    LOGGER.debug("Failed to execute query", e);
+                    LOGGER.warn("Failed to execute query all hosts query", e);
                 } finally {
                     time.stop();
                 }
@@ -129,12 +129,12 @@ public class CassandraHealthCheck {
         sessionMap = connections;
     }
 
-    private Status checkStatus(Session session) {
+    private Status checkStatus(String host, Session session) {
         try {
             session.execute(configuration.getQuery());
             return Status.UP;
         } catch (Exception e) {
-            LOGGER.debug("Unable to execute query", e);
+            LOGGER.warn("Unable to execute query for host " + host, e);
             return Status.DOWN;
         }
     }
